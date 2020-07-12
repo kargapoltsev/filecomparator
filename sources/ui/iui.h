@@ -8,7 +8,7 @@ class IUI
 public:
 	virtual ~IUI() {}
 
-	// Получение путей дреткорий для сравнения
+	// Получение путей рабочих директорий для сравнения файлов
 	virtual std::pair<std::filesystem::path, std::filesystem::path> getPaths() = 0;
 
 	// Отображение эквивалентных файлов

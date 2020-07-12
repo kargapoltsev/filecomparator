@@ -2,6 +2,7 @@
 #include <fstream>
 #include <map>
 #include <list>
+#include "directoryhandler.h"
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -18,7 +19,7 @@ std::vector<std::pair<std::string, std::string>> FilesComparator::getEqualFilesL
 		{
 			const auto filePath2 = file2.path();
 
-			if (isFilesSizeEqual(filePath1, filePath2) && isFileDataEqual(filePath1, filePath2))
+			if (isFilesSizeEqual(filePath1, filePath2) && isFilesDataEqual(filePath1, filePath2))
 				result.emplace_back(filePath1.filename().u8string(), filePath2.filename().u8string());
 		}
 	}
@@ -26,44 +27,51 @@ std::vector<std::pair<std::string, std::string>> FilesComparator::getEqualFilesL
 	return result;
 }
 
-std::vector<std::pair<std::string, std::string>> FilesComparator::getEqualFilesList(const std::filesystem::path & directoryPath1, const std::filesystem::path & directoryPath2)
+std::vector<std::pair<std::string, std::string>> FilesComparator::getEqualFilesList(
+	const fs::path & directoryPath1, const fs::path & directoryPath2)
 {
-	// 1. Sorting files in directory by size
-	std::map<std::size_t, std::vector<fs::path>> directoryGroups1;
-	
-	for (auto& file : fs::directory_iterator(directoryPath1))
-		directoryGroups1[file.file_size()].push_back(file.path());
+	std::vector<std::pair<std::string, std::string>> result;
 
-	std::map<std::size_t, std::vector<fs::path>> directoryGroups2;
-	for (auto& file : fs::directory_iterator(directoryPath2))
-		directoryGroups2[file.file_size()].push_back(file.path());
+	DirectoryHandler dh1;
+	dh1.handleDirectory(directoryPath1);
 
-	// 2. Splitting files by groups with equal contents
+	DirectoryHandler dh2;
+	dh2.handleDirectory(directoryPath2);
 
-	//auto it1 = directoryGroups1.begin();
-	//auto end1 = directoryGroups1.end();
-	//auto it2 = directoryGroups2.begin();
-	//auto end2 = directoryGroups2.end();
+	for (const auto&[size1, groups1] : dh1)
+	{
+		const auto it2 = dh2.find(size1);
 
-	//for (; it1 != end1 && it2 != end2; )
-	//{
-	//	const auto&[size1, path1] = *it1;
-	//	const auto&[size2, path2] = *it2;
-	//}
+		if (it2 != dh2.end())
+		{
+			const auto&[size2, groups2] = *it2;
 
-	//for (const auto&[size1, files1] : directoryGroups1)
-	//{
-	//	const auto it2 = directoryGroups2.find(size1);
-	//	if (it2 != directoryGroups2.end())
-	//	{
-	//		const auto&[size2, files2] = *it2;
+			for (auto &group1 : groups1)
+			{
+				if (group1.empty())
+					continue;
 
-	//		if (isFileDataEqual(path1, path2))
-	//			result.emplace_back(filePath1.filename().u8string(), filePath2.filename().u8string());
-	//	}
-	//}
+				for (auto &group2 : groups2)
+				{
+					if (group2.empty())
+						continue;
 
-	return std::vector<std::pair<std::string, std::string>>();
+					if (isFilesDataEqual(group1.front(), group2.front()))
+					{
+						for (const auto &path1 : group1)
+						{
+							for (const auto &path2 : group2)
+							{
+								result.emplace_back(path1.filename().u8string(), path2.filename().u8string());
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return result;
 }
 
 
@@ -72,7 +80,7 @@ bool FilesComparator::isFilesSizeEqual(const filesystem::path &filePath1, const 
     return fs::file_size(filePath1) == fs::file_size(filePath2);
 }
 
-bool FilesComparator::isFileDataEqual(const filesystem::path &filePath1, const filesystem::path &filePath2)
+bool FilesComparator::isFilesDataEqual(const filesystem::path &filePath1, const filesystem::path &filePath2)
 {
     std::ifstream file1(filePath1);
     std::ifstream file2(filePath2);
@@ -93,3 +101,5 @@ bool FilesComparator::isFileDataEqual(const filesystem::path &filePath1, const f
 
     return (begin1 == end) && (begin2 == end);
 }
+
+

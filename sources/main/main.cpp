@@ -8,7 +8,7 @@ int main()
 	{
 		CUI cui;
 		const auto[directoryPath1, directoryPath2] = cui.getPaths();
-		const auto files = FilesComparator::getEqualFilesListSimple(directoryPath1, directoryPath2);
+		const auto files = FilesComparator::getEqualFilesList(directoryPath1, directoryPath2);
 		cui.displayFiles(files);
 	}
 	catch (const std::exception &e)

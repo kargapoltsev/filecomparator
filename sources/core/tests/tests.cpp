@@ -81,37 +81,21 @@ TEST_F( FilesComparatorTests, filesComparisonBySizeTest )
 
 TEST_F(FilesComparatorTests, filesComparisonByDataTest)
 {
-	const auto isDataEqual1 = FilesComparator::isFileDataEqual(filePath11, filePath21);
+	const auto isDataEqual1 = FilesComparator::isFilesDataEqual(filePath11, filePath21);
 	ASSERT_TRUE(isDataEqual1);
 
-	const auto isDataEqual2 = FilesComparator::isFileDataEqual(filePath12, filePath21);
+	const auto isDataEqual2 = FilesComparator::isFilesDataEqual(filePath12, filePath21);
 	ASSERT_FALSE(isDataEqual2);
 }
 
 TEST_F(FilesComparatorTests, directorySimpleComparisonTest)
 {
 	const auto files = FilesComparator::getEqualFilesListSimple(dirPath1, dirPath2);
-
-	std::cout << "Equals files are:\n";
-
-	for (const auto &[filename1, filename2] : files)
-		std::cout << filename1 << " and " << filename2 << "\n";
-
-	std::cout << std::endl;
-
 	ASSERT_EQ(files.size(), 6);
 }
 
 TEST_F(FilesComparatorTests, directoryComparisonTest)
 {
 	const auto files = FilesComparator::getEqualFilesList(dirPath1, dirPath2);
-
-	std::cout << "Equals files are:\n";
-
-	for (const auto &[filename1, filename2] : files)
-		std::cout << filename1 << " and " << filename2 << "\n";
-
-	std::cout << std::endl;
-
 	ASSERT_EQ(files.size(), 6);
 }
